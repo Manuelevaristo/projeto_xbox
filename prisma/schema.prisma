@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String    @id @default(uuid())
+  name     String
+  email    String    @unique
+  password String
+  cpf      String    @unique
+  isAdmin  Boolean   @unique @map("is_admin")
+  profiles Profile[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Profile {
+  id        String     @id @default(uuid())
+  title     String
+  imagemUrl String     @map("imagem_url")
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String     @map("user_id")
+  favorites Favorite[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+model Game {
+  id                 String    @id @default(uuid())
+  title              String
+  coverImageurl      String
+  description        String
+  year               String
+  imdbScore          String    @map("imbd_score")
+  trailerYoutubeUrl  String    @map("trailer_youtube_url")
+  gameplayYoutubeUrl String    @map("gameplay_youtube_url")
+  Favorite           Favorite? @relation(fields: [favoriteId], references: [id])
+  favoriteId         String?
+  gender             Gender[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("games")
+}
+
+model Gender {
+  id     String  @id @default(uuid())
+  name   String
+  Game   Game?   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameId String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("genres")
+}
+
+model Favorite {
+  id        String  @id @default(uuid())
+  profileId String
+  games     Game[]
+  profile   Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
